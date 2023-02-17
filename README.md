@@ -1,83 +1,34 @@
-# Pico C++ Boilerplate Project <!-- omit in toc -->
+# Galactic Unicorn: Multiverse
 
-This project is intended as a starting point for working with the Pico SDK and Pimoroni Libraries in C++.
+A firmware and Python ... software ... for driving multiple Galactic Unicorn displays as a single display from a host computer.
 
-- [Before you start](#before-you-start)
-- [Preparing your build environment](#preparing-your-build-environment)
-- [Grab the Pimoroni libraries](#grab-the-pimoroni-libraries)
-- [Clone this boilerplate](#clone-this-boilerplate)
-- [Prepare Visual Studio Code](#prepare-visual-studio-code)
-- [Prepare your project](#prepare-your-project)
-- [Pick your LICENSE](#pick-your-license)
+## UDev Rules (or, avoiding your displays getting all messed-up like)
 
-## Before you start
+See `99-fire.rules` for an example.
 
-It's easier if you make a `pico` directory or similar in which you keep the SDK, Pimoroni Libraries and your projects alongside each other. This makes it easier to include libraries.
+Each board should have a unique `iSerial`.
 
-## Preparing your build environment
-
-Install build requirements:
-
-```bash
-sudo apt update
-sudo apt install cmake gcc-arm-none-eabi build-essential
-```
-
-And the Pico SDK:
+Connect your boards, either one at a time or all together and find their unique IDs with:
 
 ```
-git clone https://github.com/raspberrypi/pico-sdk
-cd pico-sdk
-git submodule update --init
-export PICO_SDK_PATH=`pwd`
-cd ../
+sudo lsusb -v -d0xcafe: | grep iSerial
 ```
 
-The `PICO_SDK_PATH` set above will only last the duration of your session.
+Plug these into `99-fire.rules`, adding additional entries as necessary.
 
-You should should ensure your `PICO_SDK_PATH` environment variable is set by `~/.profile`:
+Give your boards friendly names or numbers or whatever makes sense to you.
 
-```
-export PICO_SDK_PATH="/path/to/pico-sdk"
-```
-
-## Grab the Pimoroni libraries
+Copy your rules into `/etc/udev/rules.d/`:
 
 ```
-git clone https://github.com/pimoroni/pimoroni-pico
+sudo cp 99-fire.rules /etc/udev/rules.d/
 ```
 
-## Clone this boilerplate
+Reload udev's rules:
 
 ```
-git clone https://github.com/pimoroni/pico-boilerplate
-cd pico-boilerplate
+sudo udevadm control --reload-rules
+sudo udevadm trigger
 ```
 
-If you have not or don't want to set `PICO_SDK_PATH` you can edit `.vscode/settings.json` to pass the path directly to CMake.
-
-## Prepare Visual Studio Code
-
-Open VS Code and hit `Ctrl+Shift+P`.
-
-Type `Install` and select `Extensions: Install Extensions`.
-
-Make sure you install:
-
-1. C/C++
-2. CMake
-3. CMake Tools
-4. Cortex-Debug (optional: for debugging via a Picoprobe or Pi GPIO)
-5. Markdown All in One (recommended: for preparing your own README.md)
-
-## Prepare your project
-
-Edit `CMakeLists.txt` and follow the instructions, you should make sure you:
-
-1. edit your project name
-2. include the libraries you need
-2. link the libraries to your project
-
-## Pick your LICENSE
-
-We've included a copy of BSD 3-Clause License to match that used in Raspberry Pi's Pico SDK and Pico Examples. You should review this and check it's appropriate for your project before publishing your code.
+And you should see your new friendly names in `/dev`.

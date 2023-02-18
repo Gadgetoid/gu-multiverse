@@ -17,17 +17,19 @@ pico_sdk_init()
 set(FAMILY rp2040)
 set(BOARD pico_sdk)
 
+set(SRC_DIR ${CMAKE_CURRENT_LIST_DIR}/src)
+
 # Add your source files
 add_executable(${NAME}
-    main.cpp # <-- Add source files here!
-    cdc_uart.cpp
-    get_serial.cpp
-    usb_descriptors.cpp
+    ${SRC_DIR}/main.cpp
+    ${SRC_DIR}/cdc_uart.cpp
+    ${SRC_DIR}/get_serial.cpp
+    ${SRC_DIR}/usb_descriptors.cpp
 )
 
 target_include_directories(
     ${NAME} PRIVATE
-    ${CMAKE_CURRENT_LIST_DIR}
+    ${SRC_DIR}
 )
 
 # Include required libraries
@@ -49,6 +51,11 @@ pico_add_extra_outputs(${NAME})
 install(FILES
     ${CMAKE_CURRENT_BINARY_DIR}/${NAME}.uf2
     ${CMAKE_CURRENT_LIST_DIR}/README.md
+    ${CMAKE_CURRENT_LIST_DIR}/LICENSE
+    ${CMAKE_CURRENT_LIST_DIR}/99-fire.md
+    ${CMAKE_CURRENT_LIST_DIR}/examples/multiverse.py
+    ${CMAKE_CURRENT_LIST_DIR}/examples/multi_matrix.py
+    ${CMAKE_CURRENT_LIST_DIR}/examples/multi_fire.py
     DESTINATION .
 )
 

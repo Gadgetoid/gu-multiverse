@@ -52,7 +52,7 @@ install(FILES
     ${CMAKE_CURRENT_BINARY_DIR}/${NAME}.uf2
     ${CMAKE_CURRENT_LIST_DIR}/README.md
     ${CMAKE_CURRENT_LIST_DIR}/LICENSE
-    ${CMAKE_CURRENT_LIST_DIR}/99-fire.md
+    ${CMAKE_CURRENT_LIST_DIR}/99-fire.rules
     ${CMAKE_CURRENT_LIST_DIR}/examples/multiverse.py
     ${CMAKE_CURRENT_LIST_DIR}/examples/multi_matrix.py
     ${CMAKE_CURRENT_LIST_DIR}/examples/multi_fire.py

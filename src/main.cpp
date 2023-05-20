@@ -29,6 +29,8 @@
 
 #include "libraries/pico_graphics/pico_graphics.hpp"
 #include "galactic_unicorn.hpp"
+#include "pico/bootrom.h"
+#include "hardware/structs/rosc.h"
 
 #include "bsp/board.h"
 #include "tusb.h"
@@ -76,6 +78,11 @@ int main(void) {
         uint bytes_recvd = cdc_task(buf + bytes_total, MAX_UART_PKT); // CDC serial task
         bytes_total += bytes_recvd;
         if(bytes_total >= BUFF_SIZE) {
+            if (strncmp((const char* )buf, "multiverse:0000", 16) == 0) {
+                rosc_hw->ctrl = ROSC_CTRL_ENABLE_VALUE_ENABLE << ROSC_CTRL_ENABLE_LSB;
+                reset_usb_boot(0, 0);
+                break;
+            }
             bytes_total = 0;
             galactic_unicorn.update(&graphics);
         }

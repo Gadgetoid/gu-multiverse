@@ -65,7 +65,7 @@ class Display:
         if self._use_threads:
             # Wait for display to finish updating
             while self._event.is_set():
-                pass
+                time.sleep(1.0 / 10000)
             self._buffer = buffer[self.y:self.y + self.h, self.x:self.x + self.w].tobytes()
             self._event.set()
         else:

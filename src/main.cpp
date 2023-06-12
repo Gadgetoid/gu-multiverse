@@ -49,6 +49,8 @@ const size_t COMMAND_LEN = 4;
 uint8_t command_buffer[COMMAND_LEN];
 std::string_view command((const char *)command_buffer, COMMAND_LEN);
 
+//uint16_t audio_buffer[22050] = {0};
+
 bool cdc_wait_for(std::string_view data, uint timeout_ms=1000) {
     timeout_state ts;
     absolute_time_t until = delayed_by_ms(get_absolute_time(), timeout_ms);
@@ -85,6 +87,20 @@ size_t cdc_get_bytes(const uint8_t *buffer, const size_t len, const uint timeout
     return len - bytes_remaining;
 }
 
+uint16_t cdc_get_data_uint16() {
+    uint16_t len;
+    tud_task();
+    cdc_get_bytes((uint8_t *)&len, 2);
+    return len;
+}
+
+uint8_t cdc_get_data_uint8() {
+    uint8_t len;
+    tud_task();
+    cdc_get_bytes((uint8_t *)&len, 1);
+    return len;
+}
+
 int main(void) {
     board_init(); // Wtf?
     usb_serial_init(); // ??
@@ -111,6 +127,31 @@ int main(void) {
                 display::update();
             }
             continue;
+        }
+
+        /*if(command == "wave") {
+            uint16_t audio_len = cdc_get_data_uint16();
+            if (cdc_get_bytes((uint8_t *)audio_buffer, audio_len) == audio_len) {
+                display::play_audio((uint8_t *)audio_buffer, audio_len / 2);
+            }
+            continue;
+        }*/
+
+        if(command == "note") {
+            uint8_t channel = cdc_get_data_uint8();
+            uint16_t freq = cdc_get_data_uint16();
+
+            uint8_t waveform = cdc_get_data_uint8();
+
+            uint16_t a = cdc_get_data_uint16();
+            uint16_t d = cdc_get_data_uint16();
+            uint16_t s = cdc_get_data_uint16();
+            uint16_t r = cdc_get_data_uint16();
+
+            uint8_t phase = cdc_get_data_uint8();
+
+            display::play_note(channel, freq, waveform, a, d, s, r, phase);
+            //display::info("note");
         }
 
         if(command == "_rst") {

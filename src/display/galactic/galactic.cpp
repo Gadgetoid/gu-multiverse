@@ -26,4 +26,33 @@ namespace display {
     void update() {
         galactic_unicorn.update(&graphics);
     }
+
+    void play_note(uint8_t channel, uint16_t freq, uint8_t waveform, uint16_t a, uint16_t d, uint16_t s, uint16_t r, uint8_t phase) {
+        galactic_unicorn.play_synth();
+        AudioChannel &ch = galactic_unicorn.synth_channel(channel);
+        ch.waveforms = waveform;
+        ch.frequency = freq;
+        ch.attack_ms = a;
+        ch.decay_ms = d;
+        ch.sustain = s;
+        ch.release_ms = r;
+        switch((ADSRPhase)phase) {
+            case ADSRPhase::ATTACK:
+                ch.trigger_attack();
+                break;
+            case ADSRPhase::DECAY:
+                ch.trigger_decay();
+                break;
+            case ADSRPhase::SUSTAIN:
+                ch.trigger_sustain();
+                break;
+            case ADSRPhase::RELEASE:
+                ch.trigger_release();
+                break;
+        }
+    }
+
+    void play_audio(uint8_t *audio_buffer, size_t len) {
+        galactic_unicorn.play_sample(audio_buffer, len);
+    }
 }

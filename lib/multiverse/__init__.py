@@ -3,6 +3,7 @@ import serial
 import threading
 import signal
 import time
+import struct
 
 
 __version__ = '0.0.2'
@@ -12,6 +13,19 @@ __version__ = '0.0.2'
 class Display:
     # Just in case we get fancy and use RGB565 or RGB332
     BYTES_PER_PIXEL = 4
+
+    WAVEFORM_NOISE = 128
+    WAVEFORM_SQUARE = 64
+    WAVEFORM_SAW = 32
+    WAVEFORM_TRIANGLE = 16
+    WAVEFORM_SINE = 8
+    WAVEFORM_WAVE = 1
+
+    PHASE_ATTACK = 0
+    PHASE_DECAY = 1
+    PHASE_SUSTAIN = 2
+    PHASE_RELEASE = 3
+    PHASE_OFF = 4
 
     def __init__(self, port, w, h, x, y, rotate=0):
         self.path = port
@@ -63,6 +77,12 @@ class Display:
             self._running = False
             self.sync()
         self.port.write(b"multiverse:_rst")
+        self.port.flush()
+
+    def play_note(self, channel, frequency, waveform=WAVEFORM_TRIANGLE, attack=10, decay=200, sustain=0, release=0, phase=PHASE_ATTACK):
+        self.sync()
+        self.port.write(b"multiverse:note")
+        self.port.write(struct.pack("<BHBHHHHB", channel, frequency, waveform, attack, decay, sustain, release, phase))
         self.port.flush()
 
     def update(self, buffer):
@@ -126,3 +146,8 @@ class Multiverse:
     def update(self, buffer):
         for display in self.displays:
             display.update(buffer)
+
+    def play_note(self, *args, **kwargs):
+        for display in self.displays:
+            display.play_note(*args, **kwargs)
+

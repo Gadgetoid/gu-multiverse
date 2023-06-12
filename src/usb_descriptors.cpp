@@ -105,9 +105,9 @@ uint8_t const * tud_descriptor_configuration_cb(uint8_t index)
 char const* string_desc_arr [] =
 {
   (const char[]) { 0x09, 0x04 }, // 0: is supported language is English (0x0409)
-  "Raspberry Pi", // 1: Manufacturer
-  "Picoprobe",    // 2: Product
-  usb_serial,     // 3: Serial, uses flash unique ID
+  "Pimoroni",
+  "Multiverse",
+  usb_serial,
 };
 
 static uint16_t _desc_str[32];

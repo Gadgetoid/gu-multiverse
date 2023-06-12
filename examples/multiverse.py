@@ -1,7 +1,8 @@
 import numpy
 import serial
 import threading
-
+import signal
+import time
 
 # Class to represent a single Galactic Unicorn display
 # handy place to store the serial port opening and such
@@ -16,46 +17,107 @@ class Display:
         self.h = h
         self.x = x
         self.y = y
+        self._use_threads = False
 
-    def setup(self):
+    def setup(self, use_threads=False):
         self.port = serial.Serial(self.path)
+    
+        self._use_threads = use_threads
+        if self._use_threads:
+            self._running = True
+            self._buffer = bytearray(self.w * self.h * self.BYTES_PER_PIXEL)
+            self._event = threading.Event()
+            self._thread = threading.Thread(target=self._update_thread).start()
 
     def write(self, buffer):
         if self.port is None:
             return
-        self.port.write(buffer[self.y:self.y + self.h, self.x:self.x + self.w].tobytes())
+        self.port.write(b"multiverse:data")
+        self.port.write(buffer)
+        self.port.flush()
 
-    def flush(self):
+    def _update_thread(self):
+        while self._running:
+            if not self._event.wait(0.1):
+                continue
+            self.write(self._buffer)
+            self._event.clear()
+
+    def bootloader(self):
         if self.port is None:
             return
+        if self._use_threads:
+            self._running = False
+            self.sync()
+        self.port.write(b"multiverse:_usb")
+        self.port.flush()
+
+    def reset(self):
+        if self.port is None:
+            return
+        if self._use_threads:
+            self._running = False
+            self.sync()
+        self.port.write(b"multiverse:_rst")
         self.port.flush()
 
     def update(self, buffer):
-        threading.Thread(target=self.write, args=(buffer,)).start()
+        if self._use_threads:
+            # Wait for display to finish updating
+            while self._event.is_set():
+                pass
+            self._buffer = buffer[self.y:self.y + self.h, self.x:self.x + self.w].tobytes()
+            self._event.set()
+        else:
+            self.write(buffer[self.y:self.y + self.h, self.x:self.x + self.w].tobytes())
+
+    def sync(self):
+        while self._use_threads and self._event.is_set():
+            pass
+
+    def stop(self):
+        self._running = False
+        if self._use_threads and self._thread is not None:
+            self._thread.join()
+        self.write(numpy.zeros((self.w, self.h, self.BYTES_PER_PIXEL), dtype=numpy.uint8).tobytes())
 
     def __del__(self):
-        if self.port is None:
-            return
-        # Clear the displays to black when the program bails
-        self.port.write(numpy.zeros((self.w, self.h, self.BYTES_PER_PIXEL), dtype=numpy.uint8).tobytes())
-        self.port.flush()
-        self.port.close()
+        self.stop()
 
 
 class Multiverse:
     def __init__(self, *args):
         self.displays = list(args)
 
-    def setup(self):
+    def setup(self, use_threads=True):
         for display in self.displays:
-            display.setup()
+            display.setup(use_threads)
+
+        # Get any user signal handlers
+        self._delegate_handler = signal.getsignal(signal.SIGINT)
+        # Install our own
+        signal.signal(signal.SIGINT, self._signal_handler)
+
+    def _signal_handler(self, sig, frame):
+        self.stop()
+        if callable(self._delegate_handler):
+            self._delegate_handler(sig, frame)
+
+    def stop(self):
+        for display in self.displays:
+            display.stop()
 
     def add(self, display):
         self.displays.append(display)
 
+    def bootloader(self):
+        for display in self.displays:
+            display.bootloader()
+
+    def reset(self):
+        for display in self.displays:
+            display.reset()
+
     def update(self, buffer):
         for display in self.displays:
             display.update(buffer)
-
-        for display in self.displays:
-            display.flush()

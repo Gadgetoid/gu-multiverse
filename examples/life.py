@@ -5,21 +5,19 @@ import colorsys
 from multiverse import Multiverse, Display
 
 display = Multiverse(
-    Display("/dev/Fire-Alice", 53, 11, 0, 0),
-    Display("/dev/Fire-James", 53, 11, 53, 0),
-    Display("/dev/Fire-Susan", 53, 11, 106, 0),
+    Display("/dev/serial/by-id/usb-Pimoroni_Multiverse_E661AC8863389C27-if00", 16, 16, 0, 0),
 )
 
 display.setup()
 
 # Full buffer size
-WIDTH = 53 * 3
-HEIGHT = 11
+WIDTH = 16
+HEIGHT = 16
 BYTES_PER_PIXEL = 4
 
-INITIAL_LIFE = 500        # Number of live cells to seed
+INITIAL_LIFE = 16         # Number of live cells to seed
 GENERATION_TIME = 0.1     # MS between generations
-MINIMUM_LIFE = 100        # Auto reseed when only this many alive cells remain
+MINIMUM_LIFE = 10         # Auto reseed when only this many alive cells remain
 SMOOTHED = True           # Enable for a more organic if somewhat unsettling feel
 
 DECAY = 0.95              # Rate at which smoothing effect decays, higher number = more persistent, 1.0 = no decay
@@ -29,14 +27,20 @@ HSV_OFFSET = 0.3
 
 
 def palette(offset=0.3):
-    for h in range(256):
-        for c in colorsys.hsv_to_rgb(offset + h / 1024.0, 1.0, h / 255.0):
-            yield int(c * 255)
-        yield 0 # padding byte
+    for c in range(256):
+        yield c
+        yield 0
+        yield c // 2
+        yield 0
+    #for h in range(256):
+    #    for c in colorsys.hsv_to_rgb(offset + h / 1024.0, 1.0, h / 255.0):
+    #        yield int(c * 255)
+    #    yield 0 # padding byte
 
 
 # Palette conversion, this is actually pretty nifty
 PALETTE = numpy.fromiter(palette(HSV_OFFSET), dtype=numpy.uint8).reshape((256, 4))
+
 
 life = numpy.zeros((HEIGHT, WIDTH), dtype=numpy.float32)
 
@@ -89,7 +93,8 @@ def seed_life():
 
     HSV_OFFSET = random.randint(0, 360) / 360.0
 
-    PALETTE = numpy.fromiter(palette(HSV_OFFSET), dtype=numpy.uint8).reshape((256, 4))
+    #PALETTE = numpy.fromiter(palette(HSV_OFFSET), dtype=numpy.uint8).reshape((256, 4))
+
     for _ in range(INITIAL_LIFE):
         x = random.randint(0, WIDTH - 1)
         y = random.randint(0, HEIGHT - 1)

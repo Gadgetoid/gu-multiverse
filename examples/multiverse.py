@@ -10,13 +10,14 @@ class Display:
     # Just in case we get fancy and use RGB565 or RGB332
     BYTES_PER_PIXEL = 4
 
-    def __init__(self, port, w, h, x, y):
+    def __init__(self, port, w, h, x, y, rotate=0):
         self.path = port
         self.port = None
         self.w = w
         self.h = h
         self.x = x
         self.y = y
+        self.rotate = int(rotate / 90)
         self._use_threads = False
 
     def setup(self, use_threads=False):
@@ -62,14 +63,15 @@ class Display:
         self.port.flush()
 
     def update(self, buffer):
+        buffer = numpy.rot90(buffer[self.y:self.y + self.h, self.x:self.x + self.w], self.rotate).tobytes()
         if self._use_threads:
             # Wait for display to finish updating
             while self._event.is_set():
                 time.sleep(1.0 / 10000)
-            self._buffer = buffer[self.y:self.y + self.h, self.x:self.x + self.w].tobytes()
+            self._buffer = buffer
             self._event.set()
         else:
-            self.write(buffer[self.y:self.y + self.h, self.x:self.x + self.w].tobytes())
+            self.write(buffer)
 
     def sync(self):
         while self._use_threads and self._event.is_set():

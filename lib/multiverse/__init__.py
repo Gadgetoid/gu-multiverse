@@ -35,6 +35,10 @@ class Display:
         self.x = x
         self.y = y
         self.rotate = int(rotate / 90)
+
+        if rotate in (90, 270):
+            self.w, self.h = (self.h, self.w)
+
         self._use_threads = False
 
     def setup(self, use_threads=False):

@@ -26,6 +26,8 @@
 #ifndef CDC_UART_H
 #define CDC_UART_H
 
+const size_t MAX_UART_PACKET = 64;
+
 void cdc_uart_init(void);
 uint cdc_task(uint8_t *buf, size_t buf_len);
 

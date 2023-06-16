@@ -1,25 +1,31 @@
 import numpy
 import time
 import random
+import sys
 from multiverse import Multiverse, Display
 
 display = Multiverse(
-    Display("/dev/Fire-Alice", 53, 11, 0, 0),
-    Display("/dev/Fire-James", 53, 11, 0, 11),
-    Display("/dev/Fire-Susan", 53, 11, 0, 22),
+    Display("/dev/serial/by-id/usb-Pimoroni_Multiverse_E661AC8863389C27-if00", 16, 16, 0, 0),
 )
 
 display.setup()
 
+if len(sys.argv) == 2:
+    if sys.argv[1] == "bl":
+        display.bootloader()
+    if sys.argv[1] == "rst":
+        display.reset()
+    sys.exit(0)
+
 # Full buffer size
-WIDTH = 53
-HEIGHT = 33 + 4
+WIDTH = 16
+HEIGHT = 16 + 4
 BYTES_PER_PIXEL = 4
 
 # Fire stuff
-FIRE_SPAWNS = 5
-DAMPING_FACTOR = 0.98
-HEAT = 4.0
+FIRE_SPAWNS = 2
+DAMPING_FACTOR = 0.97
+HEAT = 2.0
 
 # Palette conversion, this is actually pretty nifty
 PALETTE = numpy.array([
@@ -32,10 +38,17 @@ PALETTE = numpy.array([
 
 # FIIIREREEEEEEE
 heat = numpy.zeros((HEIGHT, WIDTH), dtype=numpy.float32)
-
+last_update = 0
 
 # UPDATE THE FIIIIIIIIIIIIREEEEEEEEEEEEEEEEEEEEEEEEEE
-def update():
+def update(fps):
+    global last_update
+
+    if time.time() - last_update < (1.0 / fps):
+        return
+    
+    last_update = time.time()
+
     # Clear the bottom two rows (off screen)
     heat[HEIGHT - 1][:] = 0.0
     heat[HEIGHT - 2][:] = 0.0
@@ -67,7 +80,7 @@ while True:
     t_start = time.time()
 
     # Update the fire
-    update()
+    update(60)
 
     # Convert the fire buffer to RGB 888X (uint32 as four bytes)
     buf = heat.clip(0.0, 1.0) * 4

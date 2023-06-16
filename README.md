@@ -4,9 +4,21 @@ A firmware and Python library/examples for driving multiple Galactic Unicorn dis
 
 ## Using Multiverse
 
-Flash `gu-multiverse.uf2` to each Galactic Unicorn you want to use.
+Flash `galactic-multiverse.uf2` to each Galactic Unicorn you want to use.
 
-Follow the udev guide below to give each a unique alias, or hope that the `/dev/ttyACMx` nodes assigned automatically don't mess up your layout.
+Follow the udev guide below to give each a unique alias, use `/dev/serial/by-id` or hope that the `/dev/ttyACMx` nodes assigned automatically don't mess up your layout.
+
+### Running Examples
+
+From the examples directory, run:
+
+```
+PYTHONPATH=../lib python3 multi_fire.py
+```
+
+You can install the multiverse lib to avoid having to specify `PYTHONPATH`.
+
+### Getting Started
 
 Set up your displays like so:
 
@@ -15,7 +27,7 @@ from multiverse import Multiverse, Display
 
 display = Multiverse(
     #       Serial Port,       W,  H,  X,  Y
-    Display("/dev/Fire-Alice", 53, 11, 0, 0),
+    Display("/dev/Fire-Alice", 53, 11, 0, 0),  # /dev/ttyACMx, udev rule alias or /dev/serial/by-id/usb-Pimoroni_Multiverse_XXXXXXXXXXXXXXXX-if00
     Display("/dev/Fire-James", 53, 11, 0, 11),
     Display("/dev/Fire-Susan", 53, 11, 0, 22),
 )
@@ -34,7 +46,23 @@ buffer = numpy.random.rand(HEIGHT, WIDTH, BYTES_PER_PIXEL) * 255
 display.update(buffer.astype(numpy.uint8))
 ```
 
-## UDev Rules (or, avoiding your displays getting all messed-up like)
+### Using /dev/serial/by-id
+
+You might need this patch: https://raw.githubusercontent.com/yuwata/systemd/5286da064c97d2ac934cb301066aaa8605a3c8f9/rules.d/60-serial.rules
+
+Each board has a unique name/ID based on its serial number. For example:
+
+```
+/dev/serial/by-id/usb-Pimoroni_Multiverse_E6614864D3853334-if00
+```
+
+You should see them listed if you run:
+
+```
+ls /dev/serial/by-id
+```
+
+### UDev Rules (or, avoiding your displays getting all messed-up like)
 
 See `99-fire.rules` for an example.
 

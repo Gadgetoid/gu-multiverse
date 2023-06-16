@@ -12,22 +12,20 @@ env:
 
 jobs:
   build:
-    name: ${{matrix.name}}
+    name: ${{matrix.board}}
     strategy:
       matrix:
         include:
-          - os: ubuntu-20.04
-            name: Linux
-            cache-key: linux
-            cmake-args: '-DPIMORONI_PICO_PATH=$GITHUB_WORKSPACE/pimoroni-pico -DPICO_SDK_PATH=$GITHUB_WORKSPACE/pico-sdk -DPICO_BOARD=pico_w -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/install'
-            apt-packages: clang-tidy gcc-arm-none-eabi libnewlib-arm-none-eabi libstdc++-arm-none-eabi-newlib
+          - board: galactic
+          - board: cosmic
+          - board: stellar
 
-    runs-on: ${{matrix.os}}
+    runs-on: ubuntu-20.04
 
     env:
       PICO_SDK_PATH: $GITHUB_WORKSPACE/pico-sdk
       PIMORONI_PICO_LIBS: $GITHUB_WORKSPACE/pimoroni-pico
-      RELEASE_FILE: ${{github.event.repository.name}}-${{github.event.release.tag_name}}
+      RELEASE_FILE: ${{matrix.board}}-${{github.event.repository.name}}-${{github.event.release.tag_name || github.sha}}
 
     steps:
     - name: Checkout Code
@@ -40,6 +38,7 @@ jobs:
       uses: actions/checkout@v3
       with:
         repository: pimoroni/pimoroni-pico
+        ref: feature/stellar_unicorn
         path: pimoroni-pico
 
     # Checkout the Pico SDK
@@ -54,7 +53,7 @@ jobs:
     - name: Install deps
       if: runner.os == 'Linux'
       run: |
-        sudo apt update && sudo apt install ${{matrix.apt-packages}}
+        sudo apt update && sudo apt install gcc-arm-none-eabi libnewlib-arm-none-eabi libstdc++-arm-none-eabi-newlib
 
     - name: Create Build Environment
       run: cmake -E make_directory ${{runner.workspace}}/build
@@ -62,13 +61,19 @@ jobs:
     - name: Configure CMake
       shell: bash
       working-directory: ${{runner.workspace}}/build
-      run: cmake $GITHUB_WORKSPACE/project -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCPACK_PACKAGE_FILE_NAME=${{env.RELEASE_FILE}} ${{matrix.cmake-args}}
+      run: cmake $GITHUB_WORKSPACE/project -DMULTIVERSE_BOARD=${{matrix.board}} -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCPACK_PACKAGE_FILE_NAME=${{env.RELEASE_FILE}} -DPIMORONI_PICO_PATH=$GITHUB_WORKSPACE/pimoroni-pico -DPICO_SDK_PATH=$GITHUB_WORKSPACE/pico-sdk -DPICO_BOARD=pico_w -DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/install
 
     - name: Build
       working-directory: ${{runner.workspace}}/build
       shell: bash
       run: |
         cmake --build . --config $BUILD_TYPE -j 2
+
+    - name: Store .uf2 as artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{env.RELEASE_FILE}}.uf2
+        path: ${{runner.workspace}}/build/${{matrix.board}}-multiverse.uf2
 
     - name: Build Release Packages
       if: github.event_name == 'release'

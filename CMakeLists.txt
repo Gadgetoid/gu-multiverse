@@ -1,6 +1,14 @@
 cmake_minimum_required(VERSION 3.12)
 
-set(NAME gu-multiverse) 
+if(NOT DEFINED MULTIVERSE_BOARD)
+set(MULTIVERSE_BOARD galactic)
+message(WARNING "No \"MULTIVERSE_BOARD\" specified. Defaulting to \"galactic\"")
+else()
+message("\"MULTIVERSE_BOARD\" is set to \"${MULTIVERSE_BOARD}\".")
+endif()
+
+set(NAME ${MULTIVERSE_BOARD}-multiverse)
+set(DISPLAY_PATH ${CMAKE_CURRENT_LIST_DIR}/src/display/${MULTIVERSE_BOARD}/${MULTIVERSE_BOARD}.cmake)
 
 include(pimoroni_pico_import.cmake)
 include(pico_sdk_import.cmake)
@@ -32,16 +40,24 @@ target_include_directories(
     ${SRC_DIR}
 )
 
-# Include required libraries
-# This assumes `pimoroni-pico` is stored alongside your project
-include(libraries/hershey_fonts/hershey_fonts)
-include(libraries/bitmap_fonts/bitmap_fonts)
-include(libraries/pico_graphics/pico_graphics)
-include(libraries/galactic_unicorn/galactic_unicorn)
+target_compile_definitions(
+    ${NAME} PRIVATE
+    MULTIVERSE_BOARD="${MULTIVERSE_BOARD}"
+)
+
+include(${DISPLAY_PATH})
 
 # Don't forget to link the libraries you need!
 target_link_libraries(${NAME}
-    pico_stdlib pico_unique_id tinyusb_device tinyusb_board hardware_pio pico_graphics galactic_unicorn hershey_fonts bitmap_fonts
+    display
+
+    pico_stdlib
+    pico_unique_id
+    hardware_pio
+    hardware_watchdog
+
+    tinyusb_device
+    tinyusb_board
 )
 
 # create map/bin/hex file etc.

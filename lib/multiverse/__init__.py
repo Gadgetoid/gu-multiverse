@@ -68,7 +68,8 @@ class Display:
         logging.debug(f"{self.x},{self.y}: Starting thread")
         if self._thread is not None:
             raise Exception("Thread is already started")
-        self._thread = threading.Thread(target=self.run, name=f'Multiverse-Display-{self.x},{self.y}').start()
+        self._thread = threading.Thread(target=self.run, name=f'Multiverse-Display-{self.x},{self.y}')
+        self._thread.start()
             
     def run(self):
         logging.debug(f"{self.x},{self.y}: Running....")

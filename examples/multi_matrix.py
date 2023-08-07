@@ -7,14 +7,19 @@ from colorsys import hsv_to_rgb
 
 display = Multiverse(
     #       Serial Port,       W,  H,  X,  Y
-    Display("/dev/serial/by-id/usb-Pimoroni_Multiverse_E661AC8863389C27-if00", 16, 16, 0, 0),
+    Display("/dev/serial/by-id/usb-Pimoroni_Multiverse_E6614104037D9F30-if00", 53, 11, 0,  0),
+    Display("/dev/serial/by-id/usb-Pimoroni_Multiverse_E661410403422430-if00", 53, 11, 0, 11),
+    Display("/dev/serial/by-id/usb-Pimoroni_Multiverse_E661410403868C2C-if00", 53, 11, 0, 22),
+    Display("/dev/serial/by-id/usb-Pimoroni_Multiverse_E6614103E7301237-if00", 53, 11, 0, 33),
+    Display("/dev/serial/by-id/usb-Pimoroni_Multiverse_E6614C311B425233-if00", 53, 11, 0, 44),
+    Display("/dev/serial/by-id/usb-Pimoroni_Multiverse_E6614103E786A622-if00", 53, 11, 0, 55)
 )
 
-display.setup()
+display.setup(use_threads=True)
 
 # Full buffer size
-WIDTH = 16
-HEIGHT = 16
+WIDTH = 53
+HEIGHT = len(display.displays) * 11
 BYTES_PER_PIXEL = 4
 
 # Fire stuff

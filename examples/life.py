@@ -5,17 +5,22 @@ import colorsys
 from multiverse import Multiverse, Display
 
 display = Multiverse(
-    Display("/dev/serial/by-id/usb-Pimoroni_Multiverse_E661AC8863389C27-if00", 16, 16, 0, 0),
+    Display("/dev/serial/by-id/usb-Pimoroni_Multiverse_E6614104037D9F30-if00", 53, 11, 0,  0),
+    Display("/dev/serial/by-id/usb-Pimoroni_Multiverse_E661410403422430-if00", 53, 11, 0, 11),
+    Display("/dev/serial/by-id/usb-Pimoroni_Multiverse_E661410403868C2C-if00", 53, 11, 0, 22),
+    Display("/dev/serial/by-id/usb-Pimoroni_Multiverse_E6614103E7301237-if00", 53, 11, 0, 33),
+    Display("/dev/serial/by-id/usb-Pimoroni_Multiverse_E6614C311B425233-if00", 53, 11, 0, 44),
+    Display("/dev/serial/by-id/usb-Pimoroni_Multiverse_E6614103E786A622-if00", 53, 11, 0, 55)
 )
 
-display.setup()
+display.setup(use_threads=True)
 
 # Full buffer size
-WIDTH = 16
-HEIGHT = 16
+WIDTH = 53
+HEIGHT = len(display.displays) * 11
 BYTES_PER_PIXEL = 4
 
-INITIAL_LIFE = 16         # Number of live cells to seed
+INITIAL_LIFE = 200 * len(display.displays)         # Number of live cells to seed
 GENERATION_TIME = 0.1     # MS between generations
 MINIMUM_LIFE = 10         # Auto reseed when only this many alive cells remain
 SMOOTHED = True           # Enable for a more organic if somewhat unsettling feel

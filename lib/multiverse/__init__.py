@@ -8,6 +8,9 @@ import logging
 
 __version__ = '0.0.3'
 
+MODE_DEFAULT = 0
+MODE_HUB75 = 1
+
 # Class to represent a single Galactic Unicorn display
 # handy place to store the serial port opening and such
 class Display:
@@ -27,9 +30,10 @@ class Display:
     PHASE_RELEASE = 3
     PHASE_OFF = 4
 
-    def __init__(self, port, w, h, x, y, rotate=0, dummy=False):
+    def __init__(self, port, w, h, x, y, rotate=0, dummy=False, mode=MODE_DEFAULT):
         self.path = port
         self.port = None
+        self.mode = mode
         self.w = w
         self.h = h
         self.x = x
@@ -173,18 +177,44 @@ class Display:
         if not self._thread is not None:
             self._write_messages()
 
-    def update(self, buffer):
+    def update(self, source):
         #TODO move this to the multiverse. The display shouldn't get the whole buffer,
         # or be responsible for determining what to display out of it. Let the multiverse
         # decide
-        buffer = numpy.rot90(buffer[self.y:self.y + self.h, self.x:self.x + self.w], self.rotate).tobytes()
+        source = source[self.y:self.y + self.h, self.x:self.x + self.w]
+        
+        # Get the source buffer width
+        bh, bw, depth = source.shape
+
+        # Create a new target buffer matching the display size
+        target = numpy.zeros((self.h, self.w, depth), dtype=numpy.uint32)
+    
+        # Copy any pixels available from the source to the target buffer
+        target[0:bh, 0:bw] = source
+
+        # Conversion into Interstate 75's 10bit per pixel interleaved format
+        if self.mode == MODE_HUB75 and self.h in (32, 64):
+            new_buffer = numpy.zeros(target.shape, dtype=numpy.uint32)
+
+            # Interleave upper and lower display sections
+            new_buffer[::,::2] = target[:int(self.h / 2)].reshape(self.h, int(self.w / 2), depth)
+            new_buffer[::,1::2] = target[int(self.h / 2):].reshape(self.h, int(self.w / 2), depth)
+
+            # Pack into 10bit, uint32, 0b00rrrrrrrrrrggggggggggbbbbbbbbbb
+            target = (new_buffer[::,::,0] & 0x3ff) << 20 | (new_buffer[::,::,1] & 0x3ff) << 10 | (new_buffer[::,::,2] & 0x3ff)
+        else:
+            # Pack into 8bit, uint32, 0b00000000bbbbbbbbggggggggrrrrrrrr
+            target = numpy.clip(target, 0, 255).astype(numpy.uint8)
+
+        target = numpy.rot90(target, self.rotate).tobytes()
+
         if self._thread is not None:
             # This is thread safe, since we're replacing the old buffer with a new one
             # It's also a copy, becauses of tobytes, so we don't need to worry about another thread
             # changing it on us
-            self._buffer = buffer
+            self._buffer = target
         else:
-            self.write(header=b"multiverse:data", data=buffer)
+            self.write(header=b"multiverse:data", data=target)
 
     def stop(self):
         self._stop_flag.set()

@@ -2,27 +2,25 @@ import numpy
 import time
 import random
 import colorsys
-from multiverse import Multiverse, Display
+from multiverse import Multiverse, Display, MODE_HUB75
 
 display = Multiverse(
-    Display("/dev/serial/by-id/usb-Pimoroni_Multiverse_E6614104037D9F30-if00", 53, 11, 0,  0),
-    Display("/dev/serial/by-id/usb-Pimoroni_Multiverse_E661410403422430-if00", 53, 11, 0, 11),
-    Display("/dev/serial/by-id/usb-Pimoroni_Multiverse_E661410403868C2C-if00", 53, 11, 0, 22),
-    Display("/dev/serial/by-id/usb-Pimoroni_Multiverse_E6614103E7301237-if00", 53, 11, 0, 33),
-    Display("/dev/serial/by-id/usb-Pimoroni_Multiverse_E6614C311B425233-if00", 53, 11, 0, 44),
-    Display("/dev/serial/by-id/usb-Pimoroni_Multiverse_E6614103E786A622-if00", 53, 11, 0, 55)
+    Display("/dev/serial/by-id/usb-Pimoroni_Multiverse_E6614104031C5E38-if00", 192, 32, 0, 0, mode=MODE_HUB75),
+    Display("/dev/serial/by-id/usb-Pimoroni_Multiverse_E6614864D3853334-if00", 32, 32, 32, 32),
+    Display("/dev/serial/by-id/usb-Pimoroni_Multiverse_E6614864D333A036-if00", 32, 32, 64, 32)
 )
 
 display.setup(use_threads=True)
 
 # Full buffer size
-WIDTH = 53
-HEIGHT = len(display.displays) * 11
+WIDTH = 224
+HEIGHT = 64
 BYTES_PER_PIXEL = 4
+MAX_COLOUR = 1024 # 10 bit
 
-INITIAL_LIFE = 200 * len(display.displays)         # Number of live cells to seed
+INITIAL_LIFE = int(WIDTH * HEIGHT / 2)        # Number of live cells to seed
 GENERATION_TIME = 0.1     # MS between generations
-MINIMUM_LIFE = 10         # Auto reseed when only this many alive cells remain
+MINIMUM_LIFE = int(WIDTH * HEIGHT / 10)         # Auto reseed when only this many alive cells remain
 SMOOTHED = True           # Enable for a more organic if somewhat unsettling feel
 
 DECAY = 0.95              # Rate at which smoothing effect decays, higher number = more persistent, 1.0 = no decay
@@ -32,7 +30,7 @@ HSV_OFFSET = 0.3
 
 
 def palette(offset=0.3):
-    for c in range(256):
+    for c in range(MAX_COLOUR):
         yield c
         yield 0
         yield c // 2
@@ -44,7 +42,7 @@ def palette(offset=0.3):
 
 
 # Palette conversion, this is actually pretty nifty
-PALETTE = numpy.fromiter(palette(HSV_OFFSET), dtype=numpy.uint8).reshape((256, 4))
+PALETTE = numpy.fromiter(palette(HSV_OFFSET), dtype=numpy.uint16).reshape((MAX_COLOUR, 4))
 
 
 life = numpy.zeros((HEIGHT, WIDTH), dtype=numpy.float32)
@@ -127,7 +125,7 @@ while True:
     update()
 
     # Convert the fire buffer to RGB 888X (uint32 as four bytes)
-    buf = numpy.clip(duration.round(0), 0, 255).astype(numpy.uint8)
+    buf = numpy.clip(duration.round(0), 0, MAX_COLOUR - 1).astype(numpy.uint16)
     buf = PALETTE[buf]
 
     # Update the displays from the buffer

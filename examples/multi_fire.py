@@ -2,15 +2,11 @@ import numpy
 import time
 import random
 import sys
-from multiverse import Multiverse, Display
+from multiverse import Multiverse, Display, MODE_HUB75
 
 display = Multiverse(
-    Display("/dev/serial/by-id/usb-Pimoroni_Multiverse_E6614104037D9F30-if00", 53, 11, 0,  0),
-    Display("/dev/serial/by-id/usb-Pimoroni_Multiverse_E661410403422430-if00", 53, 11, 0, 11),
-    Display("/dev/serial/by-id/usb-Pimoroni_Multiverse_E661410403868C2C-if00", 53, 11, 0, 22),
-    Display("/dev/serial/by-id/usb-Pimoroni_Multiverse_E6614103E7301237-if00", 53, 11, 0, 33),
-    Display("/dev/serial/by-id/usb-Pimoroni_Multiverse_E6614C311B425233-if00", 53, 11, 0, 44),
-    Display("/dev/serial/by-id/usb-Pimoroni_Multiverse_E6614103E786A622-if00", 53, 11, 0, 55)
+    Display("/dev/serial/by-id/usb-Pimoroni_Multiverse_E6614104031C5E38-if00", 192, 32, 0, 0, mode=MODE_HUB75),
+    Display("/dev/serial/by-id/usb-Pimoroni_Multiverse_E6614864D3853334-if00", 32, 32, 32, 32)
 )
 
 display.setup(use_threads=True)
@@ -23,8 +19,8 @@ if len(sys.argv) == 2:
     sys.exit(0)
 
 # Full buffer size
-WIDTH = 53
-HEIGHT = len(display.displays) * 11
+WIDTH = 224
+HEIGHT = 68
 BYTES_PER_PIXEL = 4
 
 # Fire stuff

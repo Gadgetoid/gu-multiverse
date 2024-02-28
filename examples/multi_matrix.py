@@ -3,23 +3,19 @@ import numpy
 import time
 import random
 from multiverse import Multiverse, Display
-from colorsys import hsv_to_rgb
 
 display = Multiverse(
     #       Serial Port,       W,  H,  X,  Y
-    Display("/dev/serial/by-id/usb-Pimoroni_Multiverse_E6614104037D9F30-if00", 53, 11, 0,  0),
-    Display("/dev/serial/by-id/usb-Pimoroni_Multiverse_E661410403422430-if00", 53, 11, 0, 11),
-    Display("/dev/serial/by-id/usb-Pimoroni_Multiverse_E661410403868C2C-if00", 53, 11, 0, 22),
-    Display("/dev/serial/by-id/usb-Pimoroni_Multiverse_E6614103E7301237-if00", 53, 11, 0, 33),
-    Display("/dev/serial/by-id/usb-Pimoroni_Multiverse_E6614C311B425233-if00", 53, 11, 0, 44),
-    Display("/dev/serial/by-id/usb-Pimoroni_Multiverse_E6614103E786A622-if00", 53, 11, 0, 55)
+    Display("/dev/Fire-Alice", 53, 11, 18, 28),
+    Display("/dev/Fire-James", 53, 11, 18, 39),
+    Display("/dev/Fire-Susan", 53, 11, 18, 51),
 )
 
-display.setup(use_threads=True)
+display.setup()
 
 # Full buffer size
-WIDTH = 53
-HEIGHT = len(display.displays) * 11
+WIDTH = 90
+HEIGHT = 90
 BYTES_PER_PIXEL = 4
 
 # Fire stuff
@@ -44,17 +40,9 @@ PALETTE = numpy.array([
 
 
 matrix = numpy.zeros((HEIGHT, WIDTH), dtype=numpy.float32)
-last_update = 0
 
 
-def update(fps):
-    global last_update
-
-    if time.time() - last_update < (1.0 / fps):
-        return
-    
-    last_update = time.time()
-
+def update():
     matrix[:] *= 0.65
 
     for _ in range(10):
@@ -77,7 +65,7 @@ while True:
     t_start = time.time()
 
     # Update the fire
-    update(60)
+    update()
 
     # Convert the fire buffer to RGB 888X (uint32 as four bytes)
     buf = matrix
@@ -85,13 +73,6 @@ while True:
     buf = buf.clip(0.0, 1.0) * (len(PALETTE) - 1)
     buf = buf.astype(numpy.uint8)
     buf = PALETTE[buf]
-
-    #            b, g, r,   _
-    h = time.time() / 10.0
-    r, g, b = [int(c * 255) for c in hsv_to_rgb(h, 1.0, 1.0)]
-    for y in range(16):
-        for x in range(16):
-            buf[y][x] = (b, g, r, 0)
 
     # Update the displays from the buffer
     display.update(buf)

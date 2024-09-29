@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.12)
 
+if(DEFINED ENV{MULTIVERSE_BOARD})
+    set(MULTIVERSE_BOARD $ENV{MULTIVERSE_BOARD})
+endif()
+
 if(NOT DEFINED MULTIVERSE_BOARD)
 set(MULTIVERSE_BOARD galactic)
 message(WARNING "No \"MULTIVERSE_BOARD\" specified. Defaulting to \"galactic\"")
@@ -12,6 +16,7 @@ set(DISPLAY_PATH ${CMAKE_CURRENT_LIST_DIR}/src/display/${MULTIVERSE_BOARD}/${MUL
 
 include(pimoroni_pico_import.cmake)
 include(pico_sdk_import.cmake)
+include(zlib_import.cmake)
 
 # Gooey boilerplate
 project(${NAME} C CXX ASM)
@@ -50,6 +55,7 @@ include(${DISPLAY_PATH})
 # Don't forget to link the libraries you need!
 target_link_libraries(${NAME}
     display
+    zlib
 
     pico_stdlib
     pico_unique_id

@@ -1,28 +1,34 @@
 #include "display.hpp"
-#include <cstdlib>
 
 using namespace pimoroni;
 
-Hub75 *hub75;
-
-void __isr dma_complete() {
-    hub75->dma_complete();
-}
-
 namespace display {
+    uint8_t buffer[BUFFER_SIZE];
+    PicoGraphics_PenRGB888 graphics(WIDTH, HEIGHT, &buffer);
+    Hub75 hub75(WIDTH, HEIGHT, nullptr, PANEL_GENERIC, false, Hub75::COLOR_ORDER::RGB);
 
-    uint8_t buffer[BUFFER_SIZE * 2];
+    void __isr dma_complete() {
+        hub75.dma_complete();
+    }
 
     void init() {
-        hub75 = new Hub75(WIDTH, HEIGHT, (Pixel *)&buffer);
-        hub75->start(dma_complete);
+        hub75.start(dma_complete);
+
+        info("rdy");
     }
 
     void info(std::string_view text) {
+        graphics.set_pen(0, 0, 0);
+        graphics.clear();
+        graphics.set_pen(255, 255, 255);
+        graphics.set_font("bitmap8");
+        graphics.text(text, Point(0, 0), WIDTH, 1);
+        update();
     }
 
     void update() {
-        hub75->flip();
+        graphics.set_framebuffer(buffer);
+        hub75.update(&graphics);
     }
 
     void play_note(uint8_t channel, uint16_t freq, uint8_t waveform, uint16_t a, uint16_t d, uint16_t s, uint16_t r, uint8_t phase) {

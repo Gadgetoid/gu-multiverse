@@ -27,7 +27,6 @@ namespace display {
     }
 
     void update() {
-        graphics.set_framebuffer(buffer);
         hub75.update(&graphics);
     }
 

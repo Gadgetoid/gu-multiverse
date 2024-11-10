@@ -1,15 +1,12 @@
 #pragma once
+
 #include "libraries/pico_graphics/pico_graphics.hpp"
 #include "hub75.hpp"
-
-namespace pimoroni {
-    
-}
 
 namespace display {
     const int WIDTH = 128;
     const int HEIGHT = 32;
-    const int BUFFER_SIZE = WIDTH * HEIGHT * 4;
+    const size_t BUFFER_SIZE = WIDTH * HEIGHT * 4;
 
     void init();
     void update();

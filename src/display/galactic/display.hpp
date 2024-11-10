@@ -6,7 +6,7 @@
 namespace display {
     const int WIDTH = 53;
     const int HEIGHT = 11;
-    const int BUFFER_SIZE = WIDTH * HEIGHT * 4;
+    const size_t BUFFER_SIZE = WIDTH * HEIGHT * 4;
 
     void init();
     void update();

@@ -69,9 +69,10 @@ install(FILES
     ${CMAKE_CURRENT_LIST_DIR}/README.md
     ${CMAKE_CURRENT_LIST_DIR}/LICENSE
     ${CMAKE_CURRENT_LIST_DIR}/99-fire.rules
-    ${CMAKE_CURRENT_LIST_DIR}/examples/multiverse.py
-    ${CMAKE_CURRENT_LIST_DIR}/examples/multi_matrix.py
+    ${CMAKE_CURRENT_LIST_DIR}/examples/life.py
     ${CMAKE_CURRENT_LIST_DIR}/examples/multi_fire.py
+    ${CMAKE_CURRENT_LIST_DIR}/examples/multi_matrix.py
+    ${CMAKE_CURRENT_LIST_DIR}/examples/multi_synth.py
     DESTINATION .
 )
 

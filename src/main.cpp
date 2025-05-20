@@ -61,7 +61,7 @@ bool cdc_wait_for(std::string_view data, uint timeout_ms=1000) {
         while(1){
             tud_task();
             if (cdc_task((uint8_t *)&got_char, 1) == 1) break;
-            if(check_timeout(&ts)) return false;
+            if(check_timeout(&ts, false)) return false;
         }
         if (got_char != expected_char) return false;
     }
@@ -78,7 +78,7 @@ size_t cdc_get_bytes(const uint8_t *buffer, const size_t len, const uint timeout
     check_timeout_fn check_timeout = init_single_timeout_until(&ts, until);
 
     size_t bytes_remaining = len;
-    while (bytes_remaining && !check_timeout(&ts)) {
+    while (bytes_remaining && !check_timeout(&ts, false)) {
         tud_task(); // tinyusb device task
         size_t bytes_read = cdc_task(p, std::min(bytes_remaining, MAX_UART_PACKET));
         bytes_remaining -= bytes_read;
